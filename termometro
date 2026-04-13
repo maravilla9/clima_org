@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Termómetro del Clima Organizacional — UTEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --ink: #0d0d1a;
+  --gold: #c9a84c;
+  --toxic: #ff4757;
+  --neutral: #ffa502;
+  --positive: #2ed573;
+  --muted: #7a7a9a;
+  --border: rgba(201,168,76,0.18);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';position:fixed;top:-40%;left:-20%;width:80vw;height:80vw;
+  background:radial-gradient(circle,rgba(201,168,76,0.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+body::after {
+  content:'';position:fixed;bottom:-30%;right:-10%;width:60vw;height:60vw;
+  background:radial-gradient(circle,rgba(46,213,115,0.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+.container { max-width:580px;width:100%;position:relative;z-index:1;animation:fadeUp 0.7s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+/* HEADER */
+.header-card {
+  background:linear-gradient(145deg,#1a1a2e,#16213e);
+  border:1px solid var(--border);
+  border-radius:24px 24px 0 0;
+  padding:28px 28px 22px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.header-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--toxic),var(--neutral),var(--positive));
+}
+.header-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:18px; }
+.logo-wrap img { height:34px;filter:brightness(0) invert(1);opacity:0.92; }
+.badge-utel {
+  background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);
+  color:var(--gold);font-size:0.7rem;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;padding:5px 12px;border-radius:20px;
+}
+.header-icon {
+  font-size:3rem;margin-bottom:10px;display:block;
+  filter:drop-shadow(0 0 20px rgba(201,168,76,0.5));
+  animation:pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 14px rgba(201,168,76,0.4))}
+  50%{transform:scale(1.08);filter:drop-shadow(0 0 28px rgba(201,168,76,0.7))}
+}
+.header-card h1 {
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;
+  color:#fff;line-height:1.2;margin-bottom:6px;
+}
+.header-card h1 span { color:var(--gold); }
+.header-sub { font-size:0.85rem;color:rgba(255,255,255,0.5);letter-spacing:0.5px; }
+
+/* THERMO BAR */
+.thermo-strip { display:flex;height:6px;gap:3px;padding:0 28px;background:#1a1a2e; }
+.thermo-seg {
+  flex:1;border-radius:4px;opacity:0.2;
+  transition:opacity 0.5s ease,transform 0.3s ease;
+}
+.thermo-seg.lit { opacity:1;transform:scaleY(1.4); }
+.thermo-seg:nth-child(1){background:var(--toxic)}
+.thermo-seg:nth-child(2){background:#ff6b35}
+.thermo-seg:nth-child(3){background:var(--neutral)}
+.thermo-seg:nth-child(4){background:#7bed9f}
+.thermo-seg:nth-child(5){background:var(--positive)}
+
+/* BODY */
+.body-card {
+  background:#fff;border:1px solid #e8e4f0;border-top:none;
+  border-radius:0 0 24px 24px;padding:28px 26px 26px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.35);
+}
+
+/* PROGRESS */
+.progress-row { display:flex;align-items:center;gap:12px;margin-bottom:22px; }
+.progress-track { flex:1;height:4px;background:#ede8f8;border-radius:10px;overflow:hidden; }
+.progress-fill {
+  height:100%;background:linear-gradient(90deg,#6a0dad,var(--gold));
+  border-radius:10px;transition:width 0.5s cubic-bezier(.23,1,.32,1);width:0%;
+}
+.progress-label { font-size:0.75rem;font-weight:600;color:var(--muted);white-space:nowrap;letter-spacing:0.5px; }
+
+/* EMPRESA TAG */
+.empresa-tag {
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#1a1a2e,#16213e);
+  color:var(--gold);font-size:0.72rem;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;padding:5px 12px;border-radius:20px;
+  margin-bottom:14px;border:1px solid rgba(201,168,76,0.25);
+}
+
+/* SITUATION */
+.situation-card {
+  background:linear-gradient(135deg,#f8f6ff,#fff8ec);
+  border:1.5px solid #ede8f8;border-radius:16px;
+  padding:20px;margin-bottom:22px;position:relative;overflow:hidden;
+}
+.situation-card::before {
+  content:'\201C';position:absolute;top:-10px;left:14px;
+  font-family:'Playfair Display',serif;font-size:5rem;
+  color:rgba(106,13,173,0.08);line-height:1;pointer-events:none;
+}
+.situation-text { font-size:0.98rem;color:#1a1a2e;line-height:1.7;font-weight:500;position:relative;z-index:1; }
+
+/* Q LABEL */
+.q-label {
+  display:flex;align-items:center;gap:8px;font-size:0.8rem;font-weight:600;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;
+}
+.q-label i { color:var(--gold); }
+
+/* OPTIONS */
+.options { display:flex;flex-direction:column;gap:10px;margin-bottom:20px; }
+.option {
+  display:flex;align-items:center;gap:14px;padding:14px 18px;
+  border-radius:14px;border:1.5px solid transparent;cursor:pointer;
+  transition:all 0.25s cubic-bezier(.23,1,.32,1);font-size:0.95rem;font-weight:600;
+}
+.option-icon {
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:1.2rem;flex-shrink:0;transition:transform 0.25s;
+}
+.option:hover .option-icon { transform:scale(1.15) rotate(-5deg); }
+.option-text { flex:1; }
+.option-badge { font-size:0.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:8px; }
+
+.opt-toxic { background:#fff5f6;border-color:#ffd0d4;color:#c0392b; }
+.opt-toxic .option-icon { background:#ffe0e3;color:var(--toxic); }
+.opt-toxic .option-badge { background:#ffe0e3;color:var(--toxic); }
+.opt-toxic:hover,.opt-toxic.selected { border-color:var(--toxic);background:#fff0f1;box-shadow:0 6px 24px rgba(255,71,87,0.15);transform:translateY(-2px); }
+
+.opt-neutral { background:#fffbf0;border-color:#ffe9b0;color:#d68910; }
+.opt-neutral .option-icon { background:#fff3cc;color:var(--neutral); }
+.opt-neutral .option-badge { background:#fff3cc;color:#c47a0a; }
+.opt-neutral:hover,.opt-neutral.selected { border-color:var(--neutral);background:#fff8e6;box-shadow:0 6px 24px rgba(255,165,2,0.15);transform:translateY(-2px); }
+
+.opt-positive { background:#f0fff6;border-color:#b8f5d4;color:#1a7a40; }
+.opt-positive .option-icon { background:#ccf7e3;color:#1db954; }
+.opt-positive .option-badge { background:#ccf7e3;color:#18a349; }
+.opt-positive:hover,.opt-positive.selected { border-color:var(--positive);background:#e8fff2;box-shadow:0 6px 24px rgba(46,213,115,0.15);transform:translateY(-2px); }
+
+/* FEEDBACK */
+.feedback {
+  display:none;padding:14px 16px;border-radius:12px;font-size:0.88rem;
+  line-height:1.6;margin-bottom:16px;font-weight:500;
+  animation:slideIn 0.35s ease both;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+.feedback.correct { background:linear-gradient(135deg,#e8fff2,#f0fff6);border-left:4px solid var(--positive);color:#1a7a40; }
+.feedback.incorrect { background:linear-gradient(135deg,#fff0f1,#fff5f6);border-left:4px solid var(--toxic);color:#c0392b; }
+
+/* NEXT BTN */
+#next-btn {
+  display:none;width:100%;padding:14px;
+  background:linear-gradient(135deg,#1a1a2e,#2d1b69);
+  color:white;border:1px solid rgba(201,168,76,0.3);border-radius:14px;
+  font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all 0.25s;letter-spacing:0.3px;
+}
+#next-btn:hover { box-shadow:0 8px 28px rgba(45,27,105,0.35);transform:translateY(-1px); }
+
+/* RESULT */
+#result { display:none;animation:fadeUp 0.6s ease both; }
+.result-header { text-align:center;padding:10px 0 22px; }
+.result-big-icon {
+  font-size:4.5rem;display:block;margin-bottom:12px;
+  animation:bounceIn 0.6s cubic-bezier(.23,1,.32,1) both;
+}
+@keyframes bounceIn { from{transform:scale(0.4);opacity:0} 60%{transform:scale(1.15)} to{transform:scale(1);opacity:1} }
+.result-title { font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#1a1a2e;margin-bottom:6px; }
+.result-sub { font-size:0.88rem;color:var(--muted); }
+
+.score-section {
+  background:linear-gradient(135deg,#1a1a2e,#16213e);
+  border-radius:18px;padding:22px;margin:18px 0;
+  border:1px solid rgba(201,168,76,0.2);
+}
+.score-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+.score-label-text { font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px; }
+.score-number { font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--gold); }
+.score-track { height:10px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;margin-bottom:10px; }
+.score-fill { height:100%;border-radius:10px;transition:width 1.4s cubic-bezier(.23,1,.32,1);width:0%; }
+
+.score-stats { display:flex;gap:10px;margin-top:14px; }
+.stat-pill {
+  flex:1;text-align:center;padding:10px 8px;border-radius:10px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+}
+.stat-pill i { font-size:1.1rem;margin-bottom:4px;display:block; }
+.stat-pill span { font-size:0.72rem;color:rgba(255,255,255,0.5);display:block; }
+.stat-pill strong { font-size:0.9rem;color:white;font-weight:700; }
+
+.result-desc { font-size:0.92rem;color:#444;line-height:1.7;text-align:center;margin-bottom:20px;padding:0 4px; }
+.divider { height:1px;background:linear-gradient(90deg,transparent,#ede8f8,transparent);margin:20px 0; }
+.restart-btn {
+  width:100%;padding:14px;background:linear-gradient(135deg,#1a1a2e,#2d1b69);
+  color:white;border:1px solid rgba(201,168,76,0.3);border-radius:14px;
+  font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.25s;
+}
+.restart-btn:hover { box-shadow:0 8px 28px rgba(45,27,105,0.35);transform:translateY(-1px); }
+
+@media(max-width:400px){
+  .body-card{padding:22px 18px 20px}
+  .header-card h1{font-size:1.35rem}
+  .option{padding:12px 14px;font-size:0.88rem}
+  .option-icon{width:34px;height:34px;font-size:1rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-card">
+    <div class="header-top">
+      <div class="logo-wrap">
+        <img src="https://i.postimg.cc/FKz4sz2C/logoutelsinfondo.png" alt="UTEL">
+      </div>
+      <div class="badge-utel"><i class="fa-solid fa-graduation-cap"></i> &nbsp;UTEL</div>
+    </div>
+    <span class="header-icon">🌡️</span>
+    <h1>Termómetro del <span>Clima</span> Organizacional</h1>
+    <p class="header-sub">¿Sabes identificar un ambiente laboral? ¡Demuéstralo!</p>
+  </div>
+
+  <div class="thermo-strip">
+    <div class="thermo-seg" id="seg1"></div>
+    <div class="thermo-seg" id="seg2"></div>
+    <div class="thermo-seg" id="seg3"></div>
+    <div class="thermo-seg" id="seg4"></div>
+    <div class="thermo-seg" id="seg5"></div>
+  </div>
+
+  <div class="body-card">
+    <div class="progress-row">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-label" id="progress-label">1 / 6</span>
+    </div>
+
+    <div id="quiz">
+      <div class="empresa-tag">
+        <i class="fa-solid fa-building"></i>
+        <span id="empresa-name">Empresa</span>
+      </div>
+      <div class="situation-card">
+        <p class="situation-text" id="situation-text"></p>
+      </div>
+      <div class="q-label">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        ¿Cómo clasificas este clima?
+      </div>
+      <div class="options">
+        <div class="option opt-toxic" onclick="responder('toxico')">
+          <div class="option-icon">🔥</div>
+          <div class="option-text">Clima Tóxico</div>
+          <div class="option-badge">Tóxico</div>
+        </div>
+        <div class="option opt-neutral" onclick="responder('neutro')">
+          <div class="option-icon">⚖️</div>
+          <div class="option-text">Clima Neutro</div>
+          <div class="option-badge">Neutro</div>
+        </div>
+        <div class="option opt-positive" onclick="responder('positivo')">
+          <div class="option-icon">🌱</div>
+          <div class="option-text">Clima Positivo</div>
+          <div class="option-badge">Positivo</div>
+        </div>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button id="next-btn" onclick="siguiente()">Continuar &nbsp;→</button>
+    </div>
+
+    <div id="result">
+      <div class="result-header">
+        <span class="result-big-icon" id="result-icon"></span>
+        <div class="result-title" id="result-title"></div>
+        <div class="result-sub" id="result-sub"></div>
+      </div>
+      <div class="score-section">
+        <div class="score-top">
+          <div class="score-label-text"><i class="fa-solid fa-temperature-half"></i> &nbsp;Temperatura del diagnóstico</div>
+          <div class="score-number" id="score-pct"></div>
+        </div>
+        <div class="score-track">
+          <div class="score-fill" id="score-fill"></div>
+        </div>
+        <div class="score-stats">
+          <div class="stat-pill">
+            <i class="fa-solid fa-circle-check" style="color:#2ed573"></i>
+            <strong id="stat-correct">0</strong>
+            <span>Correctas</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fa-solid fa-circle-xmark" style="color:#ff4757"></i>
+            <strong id="stat-wrong">0</strong>
+            <span>Incorrectas</span>
+          </div>
+          <div class="stat-pill">
+            <i class="fa-solid fa-star" style="color:#c9a84c"></i>
+            <strong id="stat-rank"></strong>
+            <span>Nivel</span>
+          </div>
+        </div>
+      </div>
+      <p class="result-desc" id="result-desc"></p>
+      <div class="divider"></div>
+      <button class="restart-btn" onclick="reiniciar()">
+        <i class="fa-solid fa-rotate-right"></i> &nbsp; Jugar de nuevo
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const situaciones = [
+  {
+    empresa:"Grupo Bimbo — Ciudad de México",
+    texto:"El gerente felicita públicamente a su equipo cada semana, organiza desayunos mensuales y tiene una política de puertas abiertas para escuchar a sus colaboradores.",
+    respuesta:"positivo",
+    explicacion:"El reconocimiento constante, la comunicación abierta y los espacios de convivencia son señales claras de un clima organizacional positivo."
+  },
+  {
+    empresa:"Empresa manufacturera — Monterrey",
+    texto:"Los empleados deben pedir permiso para ir al baño, no pueden hablar entre ellos durante el trabajo y el jefe revisa su celular personal al inicio de cada turno.",
+    respuesta:"toxico",
+    explicacion:"El exceso de control, la falta de privacidad y la desconfianza hacia los empleados son indicadores claros de un clima organizacional tóxico."
+  },
+  {
+    empresa:"Startup de tecnología — Guadalajara",
+    texto:"Los empleados tienen mesas asignadas pero pueden trabajar desde casa dos días a la semana. No hay bonos, pero tampoco hay horas extra forzadas.",
+    respuesta:"neutro",
+    explicacion:"Hay flexibilidad básica pero sin incentivos ni señales claras de bienestar. Es un ambiente neutro: ni inspira ni daña."
+  },
+  {
+    empresa:"Cadena de retail — OXXO",
+    texto:"Los supervisores gritan frente a los clientes cuando un cajero comete un error. Los empleados evitan hacer preguntas por miedo a represalias.",
+    respuesta:"toxico",
+    explicacion:"La humillación pública y el miedo como mecanismo de control son signos inequívocos de un clima tóxico que afecta la productividad y el bienestar."
+  },
+  {
+    empresa:"Hospital privado — CDMX",
+    texto:"El personal de enfermería rota turnos de forma justa, tiene acceso a psicólogo gratuito y la dirección realiza encuestas de satisfacción laboral cada trimestre.",
+    respuesta:"positivo",
+    explicacion:"La equidad en turnos, el apoyo emocional y la retroalimentación constante reflejan una cultura que prioriza el bienestar del colaborador."
+  },
+  {
+    empresa:"Constructora — Puebla",
+    texto:"Los trabajadores reciben su pago puntual y tienen equipo de seguridad básico, pero nadie sabe cuáles son sus metas ni reciben retroalimentación de su desempeño.",
+    respuesta:"neutro",
+    explicacion:"Se cumplen los mínimos laborales, pero la falta de comunicación y objetivos claros genera incertidumbre. Un clima neutro que puede mejorar con liderazgo."
+  }
+];
+
+let actual=0,puntaje=0,respondido=false;
+
+function cargar(){
+  const s=situaciones[actual];
+  document.getElementById("empresa-name").textContent=s.empresa;
+  document.getElementById("situation-text").textContent=s.texto;
+  document.getElementById("progress-label").textContent=`${actual+1} / ${situaciones.length}`;
+  document.getElementById("progress-fill").style.width=`${(actual/situaciones.length)*100}%`;
+  document.getElementById("feedback").style.display="none";
+  document.getElementById("next-btn").style.display="none";
+  document.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));
+  respondido=false;
+  actualizarThermo();
+}
+
+function actualizarThermo(){
+  const p=puntaje/situaciones.length;
+  for(let i=1;i<=5;i++) document.getElementById(`seg${i}`).classList.toggle("lit",(i/5)<=(p+0.01));
+}
+
+function responder(tipo){
+  if(respondido)return;
+  respondido=true;
+  const s=situaciones[actual];
+  const ok=s.respuesta===tipo;
+  if(ok)puntaje++;
+  document.querySelectorAll(".option").forEach(opt=>{
+    const cls=tipo==='toxico'?'opt-toxic':tipo==='neutro'?'opt-neutral':'opt-positive';
+    if(opt.classList.contains(cls))opt.classList.add("selected");
+  });
+  const fb=document.getElementById("feedback");
+  fb.className="feedback "+(ok?"correct":"incorrect");
+  fb.innerHTML=`<i class="fa-solid ${ok?'fa-circle-check':'fa-circle-xmark'}"></i> ${s.explicacion}`;
+  fb.style.display="block";
+  const nb=document.getElementById("next-btn");
+  nb.style.display="block";
+  nb.innerHTML=actual<situaciones.length-1
+    ?'<i class="fa-solid fa-arrow-right"></i> &nbsp; Siguiente situación'
+    :'<i class="fa-solid fa-flag-checkered"></i> &nbsp; Ver resultado final';
+  actualizarThermo();
+}
+
+function siguiente(){
+  actual++;
+  if(actual<situaciones.length){cargar();}else{mostrarResultado();}
+}
+
+function mostrarResultado(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+  document.getElementById("progress-fill").style.width="100%";
+  document.getElementById("progress-label").textContent="¡Listo!";
+  for(let i=1;i<=5;i++)document.getElementById(`seg${i}`).classList.add("lit");
+  const pct=Math.round((puntaje/situaciones.length)*100);
+  const wrong=situaciones.length-puntaje;
+  let icon,titulo,sub,desc,color,rank;
+  if(pct>=85){
+    icon="🏆";titulo="¡Experto en Clima Organizacional!";sub="Diagnóstico de élite";rank="Experto";
+    desc="Tu capacidad para identificar ambientes laborales es sobresaliente. Tienes el perfil ideal para liderar iniciativas de bienestar organizacional.";
+    color="linear-gradient(90deg,#2ed573,#1db954)";
+  } else if(pct>=60){
+    icon="🌤️";titulo="Buen Diagnóstico";sub="Vas por buen camino";rank="Avanzado";
+    desc="Tienes una base sólida para identificar el clima organizacional. Con práctica podrás detectar incluso los casos más sutiles.";
+    color="linear-gradient(90deg,#ffa502,#f39c12)";
+  } else {
+    icon="📚";titulo="¡Sigue Aprendiendo!";sub="Hay áreas de oportunidad";rank="En progreso";
+    desc="El clima organizacional tiene muchos matices. Repasa los conceptos de bienestar laboral, liderazgo y cultura empresarial para mejorar.";
+    color="linear-gradient(90deg,#ff6b6b,#ff4757)";
+  }
+  document.getElementById("result-icon").textContent=icon;
+  document.getElementById("result-title").textContent=titulo;
+  document.getElementById("result-sub").textContent=sub;
+  document.getElementById("result-desc").textContent=desc;
+  document.getElementById("score-pct").textContent=`${pct}%`;
+  document.getElementById("stat-correct").textContent=puntaje;
+  document.getElementById("stat-wrong").textContent=wrong;
+  document.getElementById("stat-rank").textContent=rank;
+  const fill=document.getElementById("score-fill");
+  fill.style.background=color;
+  setTimeout(()=>{fill.style.width=`${pct}%`;},120);
+}
+
+function reiniciar(){
+  actual=0;puntaje=0;
+  document.getElementById("quiz").style.display="block";
+  document.getElementById("result").style.display="none";
+  for(let i=1;i<=5;i++)document.getElementById(`seg${i}`).classList.remove("lit");
+  cargar();
+}
+window.onload=cargar;
+</script>
+</body>
+</html>
