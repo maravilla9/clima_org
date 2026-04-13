@@ -22,9 +22,9 @@ body {
   background: var(--ink);
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 30px 16px 40px;
   position: relative;
   overflow-x: hidden;
 }
@@ -38,7 +38,12 @@ body::after {
   background:radial-gradient(circle,rgba(46,213,115,0.05) 0%,transparent 70%);
   pointer-events:none;z-index:0;
 }
-.container { max-width:580px;width:100%;position:relative;z-index:1;animation:fadeUp 0.7s ease both; }
+.container { max-width:600px;width:100%;position:relative;z-index:1;animation:fadeUp 0.7s ease both;margin:0 auto; }
+
+@media(min-width:768px){
+  body { align-items:center; padding: 40px 24px; }
+  .container { max-width:560px; }
+}
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 
 /* HEADER */
@@ -226,11 +231,40 @@ body::after {
 }
 .restart-btn:hover { box-shadow:0 8px 28px rgba(45,27,105,0.35);transform:translateY(-1px); }
 
-@media(max-width:400px){
-  .body-card{padding:22px 18px 20px}
-  .header-card h1{font-size:1.35rem}
-  .option{padding:12px 14px;font-size:0.88rem}
+.share-label {
+  text-align:center;font-size:0.75rem;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;
+}
+.share-label i { color:var(--gold);margin-right:5px; }
+.share-btns { display:flex;gap:8px;margin-bottom:16px; }
+.share-btn {
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 4px;border-radius:12px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;
+  transition:all 0.22s;letter-spacing:0.2px;
+}
+.share-btn:hover { transform:translateY(-2px);filter:brightness(1.1); }
+.share-btn:active { transform:scale(0.97); }
+.btn-twitter { background:#000;color:#fff; }
+.btn-facebook { background:#1877f2;color:#fff; }
+.btn-whatsapp { background:#25d366;color:#fff; }
+.btn-copy { background:#f1f5f9;color:#1a1a2e;border:1.5px solid #e2e8f0; }
+.btn-copy.copied { background:#e8fff2;color:#1a7a40;border-color:#2ed573; }
+.share-btn i { font-size:0.95rem; }
+
+@media(max-width:480px){
+  .body-card{padding:20px 16px 18px}
+  .header-card{padding:20px 18px 18px}
+  .header-card h1{font-size:1.25rem}
+  .header-icon{font-size:2.4rem}
+  .option{padding:11px 13px;font-size:0.87rem}
   .option-icon{width:34px;height:34px;font-size:1rem}
+  .result-title{font-size:1.3rem}
+  .result-big-icon{font-size:3.5rem}
+  .score-number{font-size:1.6rem}
+  .share-btn{font-size:0.72rem;padding:10px 3px}
+  .share-btn i{font-size:0.85rem}
+  .stat-pill strong{font-size:0.82rem}
 }
 </style>
 </head>
@@ -331,6 +365,21 @@ body::after {
       </div>
       <p class="result-desc" id="result-desc"></p>
       <div class="divider"></div>
+      <div class="share-label"><i class="fa-solid fa-share-nodes"></i> Comparte tu resultado</div>
+      <div class="share-btns">
+        <button class="share-btn btn-twitter" onclick="compartirTwitter()">
+          <i class="fa-brands fa-x-twitter"></i> X
+        </button>
+        <button class="share-btn btn-facebook" onclick="compartirFacebook()">
+          <i class="fa-brands fa-facebook-f"></i> Facebook
+        </button>
+        <button class="share-btn btn-whatsapp" onclick="compartirWhatsapp()">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </button>
+        <button class="share-btn btn-copy" id="copy-btn" onclick="copiarLink()">
+          <i class="fa-solid fa-link"></i> Copiar
+        </button>
+      </div>
       <button class="restart-btn" onclick="reiniciar()">
         <i class="fa-solid fa-rotate-right"></i> &nbsp; Jugar de nuevo
       </button>
@@ -458,6 +507,40 @@ function mostrarResultado(){
   const fill=document.getElementById("score-fill");
   fill.style.background=color;
   setTimeout(()=>{fill.style.width=`${pct}%`;},120);
+}
+
+function compartirTwitter(){
+  const pct=Math.round((puntaje/situaciones.length)*100);
+  const rank=pct>=85?"Experto":pct>=60?"Avanzado":"En progreso";
+  const texto=`🌡️ Obtuve ${pct}% en el Termómetro del Clima Organizacional de UTEL. Mi nivel: ${rank}. ¿Tú qué resultado obtienes?`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(texto)}&url=${encodeURIComponent('https://maravilla9.github.io/clima_org/')}`, '_blank');
+}
+
+function compartirFacebook(){
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://maravilla9.github.io/clima_org/')}`, '_blank');
+}
+
+function compartirWhatsapp(){
+  const pct=Math.round((puntaje/situaciones.length)*100);
+  const rank=pct>=85?"Experto":pct>=60?"Avanzado":"En progreso";
+  const texto=`🌡️ *Termómetro del Clima Organizacional - UTEL*
+
+Obtuve *${pct}%* y nivel *${rank}*.
+¿Tú qué resultado obtienes?
+👉 https://maravilla9.github.io/clima_org/`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+function copiarLink(){
+  navigator.clipboard.writeText('https://maravilla9.github.io/clima_org/').then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.classList.add('copied');
+    btn.innerHTML='<i class="fa-solid fa-check"></i> ¡Copiado!';
+    setTimeout(()=>{
+      btn.classList.remove('copied');
+      btn.innerHTML='<i class="fa-solid fa-link"></i> Copiar';
+    }, 2500);
+  });
 }
 
 function reiniciar(){
